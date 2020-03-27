@@ -1,6 +1,7 @@
 package com.google.ar.sceneform;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
+
 import com.google.ar.sceneform.collision.RayHit;
 
 /**
@@ -8,34 +9,41 @@ import com.google.ar.sceneform.collision.RayHit;
  * by the hit test, and associated information.
  */
 public class HitTestResult extends RayHit {
-  @Nullable private Node node;
+    @Nullable
+    private Node node;
 
-  /** @hide */
-  @SuppressWarnings("initialization") // Suppress @UnderInitialization warning.
-  public void setNode(@Nullable Node node) {
-    this.node = node;
-  }
+    /**
+     * @hide
+     */
+    @SuppressWarnings("initialization") // Suppress @UnderInitialization warning.
+    public void setNode(@Nullable Node node) {
+        this.node = node;
+    }
 
-  /**
-   * The node that was hit by the hit test. Null when there is no hit.
-   *
-   * @return the hit node
-   */
-  @Nullable
-  public Node getNode() {
-    return node;
-  }
+    /**
+     * The node that was hit by the hit test. Null when there is no hit.
+     *
+     * @return the hit node
+     */
+    @Nullable
+    public Node getNode() {
+        return node;
+    }
 
-  /** @hide */
-  public void set(HitTestResult other) {
-    super.set(other);
-    setNode(other.node);
-  }
+    /**
+     * @hide
+     */
+    public void set(HitTestResult other) {
+        super.set(other);
+        setNode(other.node);
+    }
 
-  /** @hide */
-  @Override
-  public void reset() {
-    super.reset();
-    node = null;
-  }
+    /**
+     * @hide
+     */
+    @Override
+    public void reset() {
+        super.reset();
+        node = null;
+    }
 }

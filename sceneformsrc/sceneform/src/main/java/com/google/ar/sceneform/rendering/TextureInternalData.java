@@ -1,6 +1,7 @@
 package com.google.ar.sceneform.rendering;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
+
 import com.google.ar.core.annotations.UsedByNative;
 import com.google.ar.sceneform.resources.SharedReference;
 import com.google.ar.sceneform.utilities.AndroidPreconditions;
@@ -13,38 +14,39 @@ import com.google.ar.sceneform.utilities.AndroidPreconditions;
  */
 @UsedByNative("material_java_wrappers.h")
 public class TextureInternalData extends SharedReference {
-  @Nullable private com.google.android.filament.Texture filamentTexture;
+    @Nullable
+    private com.google.android.filament.Texture filamentTexture;
 
-  private final Texture.Sampler sampler;
+    private final Texture.Sampler sampler;
 
-  @UsedByNative("material_java_wrappers.h")
-  public TextureInternalData(
-      com.google.android.filament.Texture filamentTexture, Texture.Sampler sampler) {
-    this.filamentTexture = filamentTexture;
-    this.sampler = sampler;
-  }
-
-  com.google.android.filament.Texture getFilamentTexture() {
-    if (filamentTexture == null) {
-      throw new IllegalStateException("Filament Texture is null.");
+    @UsedByNative("material_java_wrappers.h")
+    public TextureInternalData(
+            com.google.android.filament.Texture filamentTexture, Texture.Sampler sampler) {
+        this.filamentTexture = filamentTexture;
+        this.sampler = sampler;
     }
 
-    return filamentTexture;
-  }
+    com.google.android.filament.Texture getFilamentTexture() {
+        if (filamentTexture == null) {
+            throw new IllegalStateException("Filament Texture is null.");
+        }
 
-  Texture.Sampler getSampler() {
-    return sampler;
-  }
-
-  @Override
-  protected void onDispose() {
-    AndroidPreconditions.checkUiThread();
-
-    IEngine engine = EngineInstance.getEngine();
-    com.google.android.filament.Texture filamentTexture = this.filamentTexture;
-    this.filamentTexture = null;
-    if (filamentTexture != null && engine != null && engine.isValid()) {
-      engine.destroyTexture(filamentTexture);
+        return filamentTexture;
     }
-  }
+
+    Texture.Sampler getSampler() {
+        return sampler;
+    }
+
+    @Override
+    protected void onDispose() {
+        AndroidPreconditions.checkUiThread();
+
+        IEngine engine = EngineInstance.getEngine();
+        com.google.android.filament.Texture filamentTexture = this.filamentTexture;
+        this.filamentTexture = null;
+        if (filamentTexture != null && engine != null && engine.isValid()) {
+            engine.destroyTexture(filamentTexture);
+        }
+    }
 }

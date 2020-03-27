@@ -5,12 +5,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Picture;
 import android.graphics.PorterDuff;
-import android.support.annotation.Nullable;
 import android.view.Surface;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
+
 import com.google.ar.sceneform.utilities.Preconditions;
+
 import java.util.ArrayList;
 
 /**
@@ -33,125 +35,129 @@ import java.util.ArrayList;
  */
 
 class RenderViewToExternalTexture extends LinearLayout {
-  /** Interface definition for a callback to be invoked when the size of the view changes. */
-  public interface OnViewSizeChangedListener {
-    void onViewSizeChanged(int width, int height);
-  }
-
-  private final View view;
-  private final ExternalTexture externalTexture;
-  private final Picture picture = new Picture();
-  private boolean hasDrawnToSurfaceTexture = false;
-
-  @Nullable private ViewAttachmentManager viewAttachmentManager;
-  private final ArrayList<OnViewSizeChangedListener> onViewSizeChangedListeners = new ArrayList<>();
-
-  @SuppressWarnings("initialization") // Suppress @UnderInitialization warning.
-  RenderViewToExternalTexture(Context context, View view) {
-    super(context);
-    Preconditions.checkNotNull(view, "Parameter \"view\" was null.");
-
-    externalTexture = new ExternalTexture();
-
-    this.view = view;
-    addView(view);
-  }
-
-  /**
-   * Register a callback to be invoked when the size of the view changes.
-   *
-   * @param onViewSizeChangedListener the listener to attach
-   */
-  void addOnViewSizeChangedListener(OnViewSizeChangedListener onViewSizeChangedListener) {
-    if (!onViewSizeChangedListeners.contains(onViewSizeChangedListener)) {
-      onViewSizeChangedListeners.add(onViewSizeChangedListener);
-    }
-  }
-
-  /**
-   * Remove a callback to be invoked when the size of the view changes.
-   *
-   * @param onViewSizeChangedListener the listener to remove
-   */
-  void removeOnViewSizeChangedListener(OnViewSizeChangedListener onViewSizeChangedListener) {
-    onViewSizeChangedListeners.remove(onViewSizeChangedListener);
-  }
-
-  ExternalTexture getExternalTexture() {
-    return externalTexture;
-  }
-
-  boolean hasDrawnToSurfaceTexture() {
-    return hasDrawnToSurfaceTexture;
-  }
-
-  @Override
-  public void onAttachedToWindow() {
-    super.onAttachedToWindow();
-  }
-
-  @Override
-  public void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    super.onLayout(changed, left, top, right, bottom);
-    externalTexture.getSurfaceTexture().setDefaultBufferSize(view.getWidth(), view.getHeight());
-  }
-
-  @Override
-  public void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
-    for (OnViewSizeChangedListener onViewSizeChangedListener : onViewSizeChangedListeners) {
-      onViewSizeChangedListener.onViewSizeChanged(width, height);
-    }
-  }
-
-  @Override
-  public void dispatchDraw(Canvas canvas) {
-    // Sanity that the surface is valid.
-    Surface targetSurface = externalTexture.getSurface();
-    if (!targetSurface.isValid()) {
-      return;
+    /**
+     * Interface definition for a callback to be invoked when the size of the view changes.
+     */
+    public interface OnViewSizeChangedListener {
+        void onViewSizeChanged(int width, int height);
     }
 
-    if (view.isDirty()) {
-      Canvas pictureCanvas = picture.beginRecording(view.getWidth(), view.getHeight());
-      pictureCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-      super.dispatchDraw(pictureCanvas);
-      picture.endRecording();
+    private final View view;
+    private final ExternalTexture externalTexture;
+    private final Picture picture = new Picture();
+    private boolean hasDrawnToSurfaceTexture = false;
 
-      Canvas surfaceCanvas = targetSurface.lockCanvas(null);
-      picture.draw(surfaceCanvas);
-      targetSurface.unlockCanvasAndPost(surfaceCanvas);
+    @Nullable
+    private ViewAttachmentManager viewAttachmentManager;
+    private final ArrayList<OnViewSizeChangedListener> onViewSizeChangedListeners = new ArrayList<>();
 
-      hasDrawnToSurfaceTexture = true;
+    @SuppressWarnings("initialization")
+        // Suppress @UnderInitialization warning.
+    RenderViewToExternalTexture(Context context, View view) {
+        super(context);
+        Preconditions.checkNotNull(view, "Parameter \"view\" was null.");
+
+        externalTexture = new ExternalTexture();
+
+        this.view = view;
+        addView(view);
     }
 
-    invalidate();
-  }
-
-  void attachView(ViewAttachmentManager viewAttachmentManager) {
-    if (this.viewAttachmentManager != null) {
-      if (this.viewAttachmentManager != viewAttachmentManager) {
-        throw new IllegalStateException(
-            "Cannot use the same ViewRenderable with multiple SceneViews.");
-      }
-
-      return;
+    /**
+     * Register a callback to be invoked when the size of the view changes.
+     *
+     * @param onViewSizeChangedListener the listener to attach
+     */
+    void addOnViewSizeChangedListener(OnViewSizeChangedListener onViewSizeChangedListener) {
+        if (!onViewSizeChangedListeners.contains(onViewSizeChangedListener)) {
+            onViewSizeChangedListeners.add(onViewSizeChangedListener);
+        }
     }
 
-    this.viewAttachmentManager = viewAttachmentManager;
-    viewAttachmentManager.addView(this);
-  }
-
-  void detachView() {
-    if (viewAttachmentManager != null) {
-      viewAttachmentManager.removeView(this);
-      viewAttachmentManager = null;
+    /**
+     * Remove a callback to be invoked when the size of the view changes.
+     *
+     * @param onViewSizeChangedListener the listener to remove
+     */
+    void removeOnViewSizeChangedListener(OnViewSizeChangedListener onViewSizeChangedListener) {
+        onViewSizeChangedListeners.remove(onViewSizeChangedListener);
     }
-  }
 
-  void releaseResources() {
-    detachView();
+    ExternalTexture getExternalTexture() {
+        return externalTexture;
+    }
 
-    // Let Surface and SurfaceTexture be released
-    // automatically by their finalizers.
-  }
+    boolean hasDrawnToSurfaceTexture() {
+        return hasDrawnToSurfaceTexture;
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+    }
+
+    @Override
+    public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        externalTexture.getSurfaceTexture().setDefaultBufferSize(view.getWidth(), view.getHeight());
+    }
+
+    @Override
+    public void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        for (OnViewSizeChangedListener onViewSizeChangedListener : onViewSizeChangedListeners) {
+            onViewSizeChangedListener.onViewSizeChanged(width, height);
+        }
+    }
+
+    @Override
+    public void dispatchDraw(Canvas canvas) {
+        // Sanity that the surface is valid.
+        Surface targetSurface = externalTexture.getSurface();
+        if (!targetSurface.isValid()) {
+            return;
+        }
+
+        if (view.isDirty()) {
+            Canvas pictureCanvas = picture.beginRecording(view.getWidth(), view.getHeight());
+            pictureCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            super.dispatchDraw(pictureCanvas);
+            picture.endRecording();
+
+            Canvas surfaceCanvas = targetSurface.lockCanvas(null);
+            picture.draw(surfaceCanvas);
+            targetSurface.unlockCanvasAndPost(surfaceCanvas);
+
+            hasDrawnToSurfaceTexture = true;
+        }
+
+        invalidate();
+    }
+
+    void attachView(ViewAttachmentManager viewAttachmentManager) {
+        if (this.viewAttachmentManager != null) {
+            if (this.viewAttachmentManager != viewAttachmentManager) {
+                throw new IllegalStateException(
+                        "Cannot use the same ViewRenderable with multiple SceneViews.");
+            }
+
+            return;
+        }
+
+        this.viewAttachmentManager = viewAttachmentManager;
+        viewAttachmentManager.addView(this);
+    }
+
+    void detachView() {
+        if (viewAttachmentManager != null) {
+            viewAttachmentManager.removeView(this);
+            viewAttachmentManager = null;
+        }
+    }
+
+    void releaseResources() {
+        detachView();
+
+        // Let Surface and SurfaceTexture be released
+        // automatically by their finalizers.
+    }
 }
